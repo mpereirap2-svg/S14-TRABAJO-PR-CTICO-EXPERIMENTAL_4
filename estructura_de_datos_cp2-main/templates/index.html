@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroLista ✈ Vuelo {{ vuelo.codigo }}</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈</text></svg>">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+
+  <header class="barra">
+    <div class="marca">
+      <span class="marca-logo">✈</span>
+      <div><b>AeroLista</b><small>Reservas con listas enlazadas</small></div>
+    </div>
+    <div class="ruta">
+
+      <div class="ruta-punto"><b>{{ vuelo.codigo_origen }}</b><small>{{ vuelo.origen }}</small></div>
+      <div class="ruta-linea"><span>✈</span></div>
+      <div class="ruta-punto"><b>{{ vuelo.codigo_destino }}</b><small>{{ vuelo.destino }}</small></div>
+    </div>
+    <div class="vuelo-datos">
+      <span>Vuelo <b>{{ vuelo.codigo }}</b></span>
+      <span>📅 {{ vuelo.fecha }}</span>
+      <span>🕖 {{ vuelo.hora }}</span>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="zona-avion">
+
+      <div class="tablero">
+        <div class="dato"><small>Reservados</small><b id="dato-reservados">—</b></div>
+        <div class="dato"><small>Libres</small><b id="dato-libres">—</b></div>
+        <div class="dato"><small>Asientos</small><b id="dato-total">—</b></div>
+        <div class="dato">
+          <small>Ocupación</small>
+          <div class="ocupacion"><span class="luz" id="luz-ocupacion"></span><b id="dato-ocupacion">—</b></div>
+          <div class="barra-ocupacion"><span id="barra-ocupacion"></span></div>
+        </div>
+      </div>
+      <p class="aviso-pendiente" id="aviso-tablero" hidden></p>
+
+      <div class="controles">
+        <ul class="leyenda">
+          <li><span class="muestra libre"></span>Libre</li>
+          <li><span class="muestra seleccionado"></span>Seleccionado</li>
+          <li><span class="muestra ocupado"></span>Reservado</li>
+          <li><span class="muestra encontrado"></span>Encontrado</li>
+        </ul>
+        <div class="vistas">
+
+          <button type="button" class="btn-vista activo" data-vista="3d">🧊 3D</button>
+          <button type="button" class="btn-vista" data-vista="2d">🗺️ 2D</button>
+        </div>
+      </div>
+
+      <div class="ajustes-3d" id="ajustes-3d">
+        <label>Inclinación <input type="range" id="rango-inclinacion" min="0" max="65" value="42"></label>
+        <label>Giro <input type="range" id="rango-giro" min="-180" max="180" value="0"></label>
+      </div>
+
+      <p class="aviso-pendiente" id="aviso-avion" hidden></p>
+
+      <div class="escena" id="escena">
+        <div class="avion vista-3d" id="avion">
+          <div class="sombra"></div>
+          <div class="ala ala-izq"></div>
+          <div class="ala ala-der"></div>
+          <div class="motor motor-izq"></div>
+          <div class="motor motor-der"></div>
+          <div class="timon timon-izq"></div>
+          <div class="timon timon-der"></div>
+          <div class="fuselaje">
+            <div class="nariz">
+              <div class="parabrisas"><span></span><span></span></div>
+            </div>
+            <div class="cabina" id="cabina">
+
+            </div>
+            <div class="cola"><span>AL</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+
+      <nav class="pestanas">
+        <button type="button" class="pestana activa" data-pestana="reservar">➕ Reservar</button>
+        <button type="button" class="pestana" data-pestana="buscar">🔍 Buscar</button>
+        <button type="button" class="pestana" data-pestana="modificar">✏️ Modificar</button>
+        <button type="button" class="pestana" data-pestana="eliminar">🗑️ Eliminar</button>
+        <button type="button" class="pestana" data-pestana="listar">📋 Listar</button>
+      </nav>
+
+      <section class="contenido-pestana activa" id="pestana-reservar">
+        <h2>Nueva reserva</h2>
+        <p class="ayuda">① Haz clic en un asiento <b class="txt-verde">verde</b> · ② llena los datos · ③ reserva.</p>
+        <form id="form-reservar" class="formulario" autocomplete="off">
+
+          <div class="asiento-elegido">
+            <span>Asiento</span>
+            <output id="reservar-asiento" class="chip-asiento vacio">—</output>
+            <small id="reservar-clase">Elige uno en el avión</small>
+          </div>
+
+          <label>Nombre
+            <input name="nombre" required minlength="2" maxlength="30" placeholder="Ej: Carla Mendoza">
+          </label>
+          <div class="dos-campos">
+            <label>Cédula
+              <input name="cedula" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" placeholder="10 dígitos">
+            </label>
+            <label>Edad
+              <input name="edad" type="number" required min="0" max="120" placeholder="Ej: 25">
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primario">✈ Reservar asiento</button>
+        </form>
+      </section>
+      <section class="contenido-pestana" id="pestana-buscar">
+        <h2>Buscar reserva</h2>
+        <form id="form-buscar" class="formulario" autocomplete="off">
+
+          <div class="segmentado">
+            <label><input type="radio" name="tipo" value="numero" checked><span>N.º reserva</span></label>
+            <label><input type="radio" name="tipo" value="cedula"><span>Cédula</span></label>
+            <label><input type="radio" name="tipo" value="asiento"><span>Asiento</span></label>
+          </div>
+          <div class="fila-busqueda">
+            <input id="buscar-valor" required placeholder="Ej: 1002">
+            <button type="submit" class="btn btn-primario">🔍 Buscar</button>
+          </div>
+        </form>
+        <div id="resultado-buscar" class="resultado"></div>
+      </section>
+      <section class="contenido-pestana" id="pestana-modificar">
+        <h2>Modificar reserva</h2>
+
+        <form id="form-cargar" class="formulario" autocomplete="off">
+          <div class="fila-busqueda">
+            <input id="modificar-numero" type="number" required placeholder="N.º de reserva, ej: 1009">
+            <button type="submit" class="btn btn-suave">Cargar</button>
+          </div>
+        </form>
+
+        <form id="form-modificar" class="formulario" autocomplete="off" hidden>
+          <div class="asiento-elegido">
+            <span>Asiento</span>
+            <output id="modificar-asiento" class="chip-asiento">—</output>
+            <small>Clic en un asiento verde para cambiarlo</small>
+          </div>
+          <label>Nombre <input name="nombre" required minlength="2" maxlength="30"></label>
+          <div class="dos-campos">
+            <label>Cédula <input name="cedula" disabled></label>
+            <label>Edad <input name="edad" type="number" required min="0" max="120"></label>
+          </div>
+          <div class="botones">
+            <button type="submit" class="btn btn-primario">💾 Guardar cambios</button>
+            <button type="button" class="btn btn-suave" id="btn-cancelar-edicion">Cancelar</button>
+          </div>
+        </form>
+      </section>
+      <section class="contenido-pestana" id="pestana-eliminar">
+        <h2>Cancelar una reserva</h2>
+        <p class="ayuda">El asiento vuelve a quedar <b class="txt-verde">libre</b>.</p>
+        <form id="form-eliminar" class="formulario" autocomplete="off">
+          <div class="fila-busqueda">
+            <input id="eliminar-numero" type="number" required placeholder="N.º de reserva, ej: 1004">
+            <button type="submit" class="btn btn-peligro">🗑️ Cancelar</button>
+          </div>
+        </form>
+
+        <dialog class="modal" id="modal">
+          <form method="dialog">
+            <h3 id="modal-titulo">¿Seguro?</h3>
+            <p id="modal-texto"></p>
+            <div class="botones">
+              <button value="no" class="btn btn-suave">No, volver</button>
+              <button value="si" class="btn btn-peligro">Sí, cancelar reserva</button>
+            </div>
+          </form>
+        </dialog>
+      </section>
+      <section class="contenido-pestana" id="pestana-listar">
+        <h2>Pasajeros del vuelo</h2>
+
+        <div class="filtros">
+          <button type="button" class="chip activo" data-clase="">Todos</button>
+          <button type="button" class="chip" data-clase="Ejecutiva">Ejecutiva</button>
+          <button type="button" class="chip" data-clase="Económica">Económica</button>
+        </div>
+        <div class="tabla-caja">
+          <table>
+            <thead><tr><th>#</th><th>N.º</th><th>Nombre</th><th>Edad</th><th>Asiento</th></tr></thead>
+            <tbody id="tabla-reservas"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="progreso" id="progreso">
+        <div class="progreso-titulo">
+          <h3>🧪 Progreso del backend</h3>
+          <b id="progreso-cuenta">—</b>
+        </div>
+        <div class="progreso-barra"><span id="progreso-barra"></span></div>
+        <ul id="progreso-lista"></ul>
+        <div class="botones">
+          <button type="button" class="btn btn-suave" id="btn-revisar">↻ Revisar otra vez</button>
+          <button type="button" class="btn btn-suave" id="btn-restaurar">↺ Datos de ejemplo</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <section class="tren">
+    <div class="tren-titulo">
+      <h2>🚂 Tu lista enlazada en la memoria del servidor</h2>
+      <code id="tren-cantidad">nodos = —</code>
+    </div>
+    <div class="tren-vagones" id="tren-vagones"></div>
+  </section>
+
+  <footer class="pie" id="pie">AeroLista · Proyecto de Estructuras de Datos · Flask + listas enlazadas</footer>
+
+  <div class="toasts" id="toasts"></div>
+  <div class="tooltip" id="tooltip" hidden></div>
+
+  <script src="{{ url_for('static', filename='js/utilidades.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/mensajes.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/avion.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/clic.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vista3d.js') }}"></script>
+
+  <script src="{{ url_for('static', filename='js/semaforo.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tooltip.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tablero.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pestanas.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/reservar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/modificar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/eliminar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/buscar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/listar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tren.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/progreso.js') }}"></script>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
